@@ -5,7 +5,8 @@ import time
 import http
 import logging
 import json
-
+import base64
+from google.cloud import pubsub
 
 # Change the format of messages logged to Stackdriver
 logging.basicConfig(format='%(message)s', level=logging.INFO)
@@ -22,27 +23,53 @@ class FlaskGCRun(Flask):
         self.before_request(self.before_request_func)
         self.after_request(self.after_request_func)
         self.teardown_request(self.teardown_request_func)
-        self.client = {}
         self.route('/', methods=['POST'])(self.invoke)
 
     def decode(self, message):
-        return {"project_id": self.PROJECT_ID}
+        return json.loads(base64.b64decode(
+            message['data']).decode('utf-8'), strict=False)
 
-    def encode(self, resp):
-        return ""
+    def encode(self, message):
+        return json.dumps(message).encode('utf-8')
 
     def invoke(self):
-        data = self.decode(request)
+        envelope = request.get_json()
+
+        if not envelope:
+            msg = 'no Pub/Sub message received'
+            logging.error(f'error: {msg}')
+            return f'Bad Request: {msg}', 400
+
+        if not isinstance(envelope, dict) or 'message' not in envelope:
+            msg = 'invalid Pub/Sub message format'
+            logging.error(f'error: {msg}', envelope)
+            return f'Bad Request: {msg}', 400
+
+        pubsub_message = envelope['message']
+
+        # if not isinstance(pubsub_message, dict) or 'data' in pubsub_message:
+        #     msg = 'invalid Pub/Sub data format'
+        #     print(f'error: {msg}', pubsub_message)
+        #     return f'Bad Request: {msg}', 400
+
+        data = self.decode(pubsub_message)
         response = self.handler(data)
-        # self.client.process(response)
-        self.publish()
-        # return self.encode(response), http.HTTPStatus.OK
-        return response, http.HTTPStatus.OK
+        self.publish(response)
+        return self.encode(response), http.HTTPStatus.OK
 
-    def publish(self):
-        pass
+    def publish(self, message):
+        if len(self.downstream_channels) == 0:
+            return
+        data = self.encode(message)
+        publisher = pubsub.PublisherClient()
+        for channel in self.downstream_channels:
+            path = publisher.topic_path(
+                self.PROJECT_ID, channel)
+            publish_future = publisher.publish(
+                path, data=data)
+            publish_future.result()
+
     # to be overridden
-
     def handler(self, data):
         return NotImplemented
 
@@ -50,12 +77,12 @@ class FlaskGCRun(Flask):
         g.start = time.time()
 
     def after_request_func(self, response):
-        diff = time.time() - g.start
-        if ((response.response) and
-                (200 <= response.status_code < 300)):
-            d = json.loads(response.get_data())
-            d['time'] = str(diff)
-            response.set_data(json.dumps(d))
+        # diff = time.time() - g.start
+        # if ((response.response) and
+        #         (200 <= response.status_code < 300)):
+        #     d = json.loads(response.get_data())
+        #     d['time'] = str(diff)
+        #     response.set_data(json.dumps(d))
 
         return response
 
