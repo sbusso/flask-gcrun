@@ -8,18 +8,18 @@ from setuptools import setup
 
 
 setup(
-    name='Flask_GCRun',
+    name='Flask-GCRun',
     version='1.11',
-    url='https://github.com/sbusso/flask_gcrun',
+    url='https://github.com/sbusso/flask-gcrun',
     license='MIT',
     author='Stephane Busso',
     author_email='stephane.busso@gmail.com',
     description='Wrapper for Flask service on Google Cloud Run',
     long_description=__doc__,
-    py_modules=['flask_gcrun'],
+    py_modules=['flask-gcrun'],
     # if you would be using a package instead use packages instead
     # of py_modules:
-    # packages=['flask_gcrun'],
+    # packages=['flask-gcrun'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',
