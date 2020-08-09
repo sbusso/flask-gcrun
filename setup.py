@@ -8,7 +8,7 @@ from setuptools import setup
 
 
 setup(
-    name='Flask-GCRun',
+    name='flask-gcrun',
     version='1.11',
     url='https://github.com/sbusso/flask-gcrun',
     license='MIT',
@@ -24,7 +24,7 @@ setup(
     include_package_data=True,
     platforms='any',
     install_requires=[
-        'Flask==1.1.2',
+        'flask==1.1.2',
         'google-cloud-pubsub==1.7.0'
     ],
     classifiers=[
