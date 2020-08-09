@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
     name='Flask_GCRun',
-    version='1.0',
+    version='1.11',
     url='https://github.com/sbusso/flask_gcrun',
     license='MIT',
     author='Stephane Busso',
