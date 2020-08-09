@@ -8,7 +8,7 @@ from setuptools import setup
 
 
 setup(
-    name='FlaskGCRun',
+    name='Flask_GCRun',
     version='1.0',
     url='https://github.com/sbusso/flask_gcrun',
     license='MIT',
