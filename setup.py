@@ -1,5 +1,5 @@
 """
-Flask-Service
+Flask-GCRun
 -------------
 
 This is the description for that library
@@ -8,8 +8,8 @@ from setuptools import setup
 
 
 setup(
-    name='Flask-GCRun-Service',
-    version='1.0',
+    name='Flask-GCRun',
+    version='1.1',
     url='https://github.com/sbusso/flask_gcrun',
     license='MIT',
     author='Stephane Busso',
@@ -19,12 +19,13 @@ setup(
     py_modules=['flask_gcrun'],
     # if you would be using a package instead use packages instead
     # of py_modules:
-    # packages=['flask_gcrun_service'],
+    # packages=['flask_gcrun'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',
     install_requires=[
-        'Flask'
+        'Flask==1.1.2',
+        'google-cloud-pubsub==1.7.0'
     ],
     classifiers=[
         'Environment :: Web Environment',
