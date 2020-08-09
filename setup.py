@@ -16,7 +16,7 @@ setup(
     author_email='stephane.busso@gmail.com',
     description='Wrapper for Flask service on Google Cloud Run',
     long_description=__doc__,
-    py_modules=['flask_gcrun_service'],
+    py_modules=['flask_gcrun'],
     # if you would be using a package instead use packages instead
     # of py_modules:
     # packages=['flask_gcrun_service'],
