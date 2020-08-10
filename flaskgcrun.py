@@ -13,6 +13,8 @@ logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 
 class FlaskGCRun(Flask):
+    channels = None
+
     def __init__(self, import_name, downstream_channels=[]):
         super(FlaskGCRun, self).__init__(import_name)
         self.PROJECT_ID = os.getenv('PROJECT_ID')
@@ -58,11 +60,11 @@ class FlaskGCRun(Flask):
         return self.encode(response), http.HTTPStatus.OK
 
     def publish(self, message):
-        if len(self.downstream_channels) == 0:
+        if len(self.get_channels()) == 0:
             return
         data = self.encode(message)
         publisher = pubsub.PublisherClient()
-        for channel in self.downstream_channels:
+        for channel in self.get_channels():
             path = publisher.topic_path(
                 self.PROJECT_ID, channel)
             publish_future = publisher.publish(
@@ -89,6 +91,16 @@ class FlaskGCRun(Flask):
     def teardown_request_func(self, exception):
         diff = time.time() - g.start
         logging.info(f"time: {str(diff)}")
+
+    def get_channels(self):
+        if self.channels != None:
+            return self.channels
+        self.channels = []
+        c = os.getenv('DOWNSTREAM_CHANNELS')
+        if c != None:
+            self.channels += c.split(',')
+        self.channels += self.downstream_channels
+        return self.channels
 
 # def create_app():
 #     app = Flask(__name__)
