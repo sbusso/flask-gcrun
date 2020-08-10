@@ -7,6 +7,7 @@ import logging
 import json
 import base64
 from google.cloud import pubsub
+from store import Store
 
 # Change the format of messages logged to Stackdriver
 logging.basicConfig(format='%(message)s', level=logging.INFO)
@@ -17,7 +18,9 @@ class FlaskGCRun(Flask):
 
     def __init__(self, import_name, downstream_channels=[]):
         super(FlaskGCRun, self).__init__(import_name)
-        self.PROJECT_ID = os.getenv('PROJECT_ID')
+        self.PROJECT_ID = os.getenv('GCP_PROJECT')
+        if os.getenv('BUCKET_NAME') != None:
+            self._store = Store()
         self.downstream_channels = downstream_channels
         self.init_app()
 
@@ -68,6 +71,12 @@ class FlaskGCRun(Flask):
     # to be overridden
     def handler(self, data):
         return NotImplemented
+
+    def store(self):
+        if self._store != None:
+            return self._store
+        else:
+            raise Exception("BUCKET NAME is not set")
 
     def before_request_func(self):
         g.start = time.time()

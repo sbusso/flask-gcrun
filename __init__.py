@@ -1,1 +1,1 @@
-from flaskgcrun.flaskgcrun import FlaskGCRun
+from flaskgcrun.flaskgcrun import FlaskGCRun, Store
