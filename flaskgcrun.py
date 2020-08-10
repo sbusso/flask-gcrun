@@ -23,7 +23,6 @@ class FlaskGCRun(Flask):
 
     def init_app(self):
         self.before_request(self.before_request_func)
-        self.after_request(self.after_request_func)
         self.teardown_request(self.teardown_request_func)
         self.route('/', methods=['POST'])(self.invoke)
 
@@ -49,11 +48,6 @@ class FlaskGCRun(Flask):
 
         pubsub_message = envelope['message']
 
-        # if not isinstance(pubsub_message, dict) or 'data' in pubsub_message:
-        #     msg = 'invalid Pub/Sub data format'
-        #     print(f'error: {msg}', pubsub_message)
-        #     return f'Bad Request: {msg}', 400
-
         data = self.decode(pubsub_message)
         response = self.handler(data)
         self.publish(response)
@@ -78,16 +72,6 @@ class FlaskGCRun(Flask):
     def before_request_func(self):
         g.start = time.time()
 
-    def after_request_func(self, response):
-        # diff = time.time() - g.start
-        # if ((response.response) and
-        #         (200 <= response.status_code < 300)):
-        #     d = json.loads(response.get_data())
-        #     d['time'] = str(diff)
-        #     response.set_data(json.dumps(d))
-
-        return response
-
     def teardown_request_func(self, exception):
         diff = time.time() - g.start
         logging.info(f"time: {str(diff)}")
@@ -101,8 +85,3 @@ class FlaskGCRun(Flask):
             self.channels += c.split(',')
         self.channels += self.downstream_channels
         return self.channels
-
-# def create_app():
-#     app = Flask(__name__)
-
-#     return app
