@@ -14,6 +14,8 @@ logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 
 class FlaskGCRun(Flask):
+    """Super Class tu handle pub/sub request"""
+
     channels = None
 
     def __init__(self, import_name, downstream_channels=[]):
@@ -27,7 +29,7 @@ class FlaskGCRun(Flask):
     def init_app(self):
         self.before_request(self.before_request_func)
         self.teardown_request(self.teardown_request_func)
-        self.route('/', methods=['POST'])(self.invoke)
+        self.route('/', methods=['POST'])(self.__invoke)
 
     def decode(self, message):
         return json.loads(base64.b64decode(
@@ -36,7 +38,30 @@ class FlaskGCRun(Flask):
     def encode(self, message):
         return json.dumps(message).encode('utf-8')
 
-    def invoke(self):
+    def get_channels(self):
+        if self.channels != None:
+            return self.channels
+        self.channels = []
+        c = os.getenv('DOWNSTREAM_CHANNELS')
+        if c != None:
+            self.channels += c.split(',')
+        self.channels += self.downstream_channels
+        return self.channels
+
+    def publish(self, message):
+        """publsih method to send message to downstream queues"""
+        if len(self.get_channels()) == 0:
+            return
+        data = self.encode(message)
+        publisher = pubsub.PublisherClient()
+        for channel in self.get_channels():
+            path = publisher.topic_path(
+                self.PROJECT_ID, channel)
+            publish_future = publisher.publish(
+                path, data=data)
+            publish_future.result()
+
+    def __invoke(self):
         envelope = request.get_json()
 
         if not envelope:
@@ -58,24 +83,13 @@ class FlaskGCRun(Flask):
             return self.encode(response), http.HTTPStatus.OK
         else:
             return '', http.HTTPStatus.NO_CONTENT
-
-    def publish(self, message):
-        if len(self.get_channels()) == 0:
-            return
-        data = self.encode(message)
-        publisher = pubsub.PublisherClient()
-        for channel in self.get_channels():
-            path = publisher.topic_path(
-                self.PROJECT_ID, channel)
-            publish_future = publisher.publish(
-                path, data=data)
-            publish_future.result()
-
-    # to be overridden
+    
     def handler(self, data):
+        """main processing method, implementation required when subclassing"""
         return NotImplemented
 
     def store(self):
+        """Store utility to access google cloud storage"""
         if self._store != None:
             return self._store
         else:
@@ -88,12 +102,4 @@ class FlaskGCRun(Flask):
         diff = time.time() - g.start
         logging.info(f"time: {str(diff)}")
 
-    def get_channels(self):
-        if self.channels != None:
-            return self.channels
-        self.channels = []
-        c = os.getenv('DOWNSTREAM_CHANNELS')
-        if c != None:
-            self.channels += c.split(',')
-        self.channels += self.downstream_channels
-        return self.channels
+
