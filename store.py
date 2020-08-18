@@ -15,3 +15,6 @@ class Store(object):
     def upload_blob(self, source, filename):
         blob = self.bucket.blob(filename)
         blob.upload_from_filename(source)
+
+    def list_blobs(self, prefix):
+        self.bucket.list_blobs(prefix=prefix)

@@ -10,7 +10,12 @@ class TestFlaskGCRunClass(FlaskGCRun):
     def handler(self, data):
         return data
 
+class TestFlaskGCRunNoContentClass(FlaskGCRun):
+    def handler(self, data):
+        return None
 
+s = json.dumps({"output": "test"})
+message = base64.b64encode(s.encode('utf-8')).decode('ascii')
 class TestFlaskGCRun(unittest.TestCase):
     def setUp(self):
         self.server = TestFlaskGCRunClass(__name__)
@@ -29,12 +34,18 @@ class TestFlaskGCRun(unittest.TestCase):
         with self.app as c:
             response = c.post('/')
             self.assertEqual(response.status_code, 400)
-            s = json.dumps(
-                {"output": "test"})
-            message = base64.b64encode(s.encode('utf-8')).decode('ascii')
+
+            
             response = c.post(
                 '/', data=json.dumps({"message": {"data": message}}), content_type='application/json')
             self.assertEqual(response.status_code, 200)
+
+    def test_no_content(self):
+        c = TestFlaskGCRunNoContentClass(__name__).test_client()
+        response = c.post(
+                '/', data=json.dumps({"message": {"data": message}}), content_type='application/json')
+        self.assertEqual(response.status_code, 204)
+
 
 
 if __name__ == '__main__':

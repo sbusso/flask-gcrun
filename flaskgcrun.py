@@ -53,8 +53,11 @@ class FlaskGCRun(Flask):
 
         data = self.decode(pubsub_message)
         response = self.handler(data)
-        self.publish(response)
-        return self.encode(response), http.HTTPStatus.OK
+        if response != None:
+            self.publish(response)
+            return self.encode(response), http.HTTPStatus.OK
+        else:
+            return '', http.HTTPStatus.NO_CONTENT
 
     def publish(self, message):
         if len(self.get_channels()) == 0:
