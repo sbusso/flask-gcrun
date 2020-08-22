@@ -25,7 +25,8 @@ setup(
     platforms='any',
     install_requires=[
         'flask==1.1.2',
-        'google-cloud-pubsub==1.7.0'
+        'google-cloud-pubsub==1.7.0',
+        'google-cloud-storage==1.3.0'
     ],
     classifiers=[
         'Environment :: Web Environment',
