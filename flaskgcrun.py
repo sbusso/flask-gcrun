@@ -83,11 +83,12 @@ class FlaskGCRun(Flask):
             return self.encode(response), http.HTTPStatus.OK
         else:
             return '', http.HTTPStatus.NO_CONTENT
-    
+
     def handler(self, data):
         """main processing method, implementation required when subclassing"""
         return NotImplemented
 
+    @property
     def store(self):
         """Store utility to access google cloud storage"""
         if self._store != None:
@@ -101,5 +102,3 @@ class FlaskGCRun(Flask):
     def teardown_request_func(self, exception):
         diff = time.time() - g.start
         logging.info(f"time: {str(diff)}")
-
-
