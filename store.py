@@ -3,7 +3,7 @@ import os
 
 
 class Store(object):
-    def __init__(self) -> None:
+    def __init__(self):
         self._store = storage.Client()
         self.BUCKET_NAME = os.getenv('BUCKET_NAME')
         self._bucket = self._store.get_bucket(self.BUCKET_NAME)
@@ -17,4 +17,4 @@ class Store(object):
         blob.upload_from_filename(source)
 
     def list_blobs(self, prefix):
-        self._bucket.list_blobs(prefix=prefix)
+        return self._bucket.list_blobs(prefix=prefix)
