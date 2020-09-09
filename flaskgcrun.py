@@ -21,8 +21,10 @@ class FlaskGCRun(Flask):
     def __init__(self, import_name, downstream_channels=[]):
         super(FlaskGCRun, self).__init__(import_name)
         self.PROJECT_ID = os.getenv('GCP_PROJECT')
-        if os.getenv('BUCKET_NAME') != None:
-            self._store = Store()
+        if os.getenv('BUCKET_PIPELINE') != None:
+            self._store = Store(os.getenv('BUCKET_PIPELINE'))
+        if os.getenv('BUCKET_OUTPUT') != None:
+            self._output_store = Store(os.getenv('BUCKET_OUTPUT'))
         self.downstream_channels = downstream_channels
         self.init_app()
 
@@ -94,7 +96,15 @@ class FlaskGCRun(Flask):
         if self._store != None:
             return self._store
         else:
-            raise Exception("BUCKET NAME is not set")
+            raise Exception("BUCKET_PIPELINE is not set")
+
+    @property
+    def output_store(self):
+        """Store utility to access google cloud storage"""
+        if self._output_store != None:
+            return self._output_store
+        else:
+            raise Exception("BUCKET_OUTPUT is not set")
 
     def before_request_func(self):
         g.start = time.time()
