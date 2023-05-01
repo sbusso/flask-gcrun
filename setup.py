@@ -24,7 +24,7 @@ setup(
     include_package_data=True,
     platforms='any',
     install_requires=[
-        'flask==1.1.2',
+        'flask==2.3.2',
         'google-cloud-pubsub==1.7.0',
         'google-cloud-storage==1.3.0'
     ],
